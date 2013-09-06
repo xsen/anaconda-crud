@@ -1,0 +1,111 @@
+<?php defined('SYSPATH') or die('No direct script access.');
+
+abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
+
+    protected $model_name;
+    protected $actions = array(View_List::BUTTON_ADD => true, View_List::BUTTON_EDIT => true, View_List::BUTTON_DELETE => true);
+    protected $category_url;
+
+    public function before()
+    {
+        parent::before();
+        $this->category_url = Route::url('default', array('controller' => $this->request->controller()));
+        $this->add_crumb($this::get_name(),  $this->category_url);
+    }
+
+    public function action_index()
+    {
+        $this->action_list();
+    }
+
+    public function action_list()
+    {
+        $view = new View_List($this->model_name, $this->get_list());
+        $view->set_title($this::get_name());
+        $view->set_buttons_view($this->actions);
+        $view->set_column_link(array('name'));
+
+        echo $view->render();
+    }
+
+    public function action_view()
+    {
+        $model = ORM::factory($this->model_name, (int) $this->request->param('id'));
+
+        if ( ! $model->loaded() ) throw new HTTP_Exception_404;
+        if ( ! $model->can_view() ) throw new HTTP_Exception_403;
+
+        $this->add_crumb($model->get_name(), $model->get_url('view'));
+
+        $action_buttons = array(
+            View_Item::BUTTON_EDIT   => TRUE,
+            View_Item::BUTTON_DELETE => TRUE,
+        );
+
+        $view = new View_Item($model);
+        $view->set_title($this::get_name());
+        $view->set_buttons_view($action_buttons);
+
+        echo $view->render();
+    }
+
+    public function action_add($edit = null)
+    {
+        $model = $edit ? $edit : ORM::factory($this->model_name);
+        if ( !$model->loaded() AND !$model->can_add() ) throw new HTTP_Exception_403;
+
+        $errors = array();
+        if ( $this->request->method() == Request::POST ) {
+            $model->values($this->request->post());
+            try {
+                $model->save();
+            }catch (ORM_Validation_Exception $e) { $errors = $e->errors(); }
+
+            if (!$errors) $this->redirect($this->category_url);
+        }
+
+        $this->add_crumb($model->loaded() ? 'Редактирование' : 'Создание', '#');
+
+        $action_buttons = array(
+            View_Form::BUTTON_DELETE => $model->loaded(),
+            View_Form::BUTTON_CANCEL => TRUE,
+            View_Form::BUTTON_SAVE   => TRUE,
+        );
+
+        $view = $model->generate_fields_for_form(new View_Form);
+        $view->set_buttons_view($action_buttons);
+        $view->errors($errors);
+
+        echo $view->render();
+    }
+
+    public function action_edit()
+    {
+        $model = ORM::factory($this->model_name, (int) $this->request->param('id'));
+        if ( ! $model->loaded() ) throw new HTTP_Exception_404;
+        if ( ! $model->can_edit() ) throw new HTTP_Exception_403;
+
+        $this->add_crumb($model->get_name(), $model->get_url());
+        $this->action_add($model);
+    }
+
+    public function action_delete()
+    {
+        $model = ORM::factory($this->model_name, (int) $this->request->param('id'));
+
+        if ( ! $model->loaded() ) throw new HTTP_Exception_404;
+        if ( ! $model->can_delete() ) throw new HTTP_Exception_403;
+
+        $model->delete();
+
+        $this->redirect(URL::base());
+    }
+
+
+    protected function get_list()
+    {
+        return ORM::factory($this->model_name)->find_all()->as_array();
+    }
+}
+
+?>
