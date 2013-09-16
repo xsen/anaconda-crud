@@ -98,7 +98,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
         $model->delete();
 
-        $this->redirect(URL::base());
+        $this->redirect($this->category_url);
     }
 
 
