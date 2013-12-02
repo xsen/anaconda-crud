@@ -41,43 +41,6 @@ class Anaconda_ORM extends Kohana_ORM
     }
 
     /**
-     * Метод для создание правил просмотра объекта
-     * @return boolean
-     */
-    public function can_view()
-    {
-        return true;
-    }
-
-    /**
-     * Метод для создание правил добавление объекта
-     * @return boolean
-     */
-    public function can_add()
-    {
-        return true;
-    }
-
-    /**
-     * Метод для создание правил редактирования объекта
-     * @return boolean
-     */
-    public function can_edit()
-    {
-        return $this->can_add();
-    }
-
-    /**
-     * Метод для создание правил удаления объекта
-     * @return boolean
-     */
-    public function can_delete()
-    {
-        return $this->can_edit();
-    }
-
-
-    /**
      * Updates or Creates the record depending on loaded()
      * Добавлена конвертация всех полей с типом Date для корректного хранения
      * @chainable
@@ -101,6 +64,7 @@ class Anaconda_ORM extends Kohana_ORM
         parent::save($validation);
     }
 
+    // TODO: описать метод
     public function get_url($action = 'view')
     {
         $route_name = isset( $routes[$this->_object_name] ) ? $this->_object_name : 'default';
@@ -137,95 +101,6 @@ class Anaconda_ORM extends Kohana_ORM
     }
 
     /**
-     * Список полей для отображение с использованием класса View_List
-     *
-     * @return array
-     */
-    public function get_fields_list()
-    {
-        return $this->labels();
-    }
-
-
-    /**
-     * Список полей для отображение с использованием класса View_Item
-     *
-     * @return array
-     */
-    public function get_fields_view()
-    {
-        return $this->labels();
-    }
-
-    /**
-     * Список полей для отображение с использованием класса List_Form
-     *
-     * @return array
-     */
-    public function get_fields_add()
-    {
-        return $this->labels();
-    }
-
-    /**
-     * Список полей для отображение с использованием класса List_Form
-     *
-     * @return array
-     */
-    public function get_fields_edit()
-    {
-        return $this->labels();
-    }
-
-    /**
-     * Получение значения для отображение с использованием класса List_View
-     *
-     * @param string $column
-     *
-     * @return mixed
-     */
-    public function get_value_list($column)
-    {
-        return $this->get($column);
-    }
-
-    /**
-     * Получение значения для отображение с использованием класса List_Item
-     *
-     * @param string $column
-     *
-     * @return mixed
-     */
-    public function get_value_view($column)
-    {
-        return $this->get($column);
-    }
-
-    /**
-     * Получение значения для отображение с использованием класса List_Form
-     *
-     * @param string $column
-     *
-     * @return mixed
-     */
-    public function get_value_add($column)
-    {
-        return $this->get($column);
-    }
-
-    /**
-     * Получение значения для отображение с использованием класса List_Form
-     *
-     * @param string $column
-     *
-     * @return mixed
-     */
-    public function get_value_edit($column)
-    {
-        return $this->get($column);
-    }
-
-    /**
      * getter name
      * @return mixed
      */
@@ -250,7 +125,7 @@ class Anaconda_ORM extends Kohana_ORM
 
         foreach ($fields as $_key => $_name) {
             $params = array(
-                'value'       => $this->loaded() ? $this->get_value_edit($_key) : $this->get_value_add($_key),
+                'value'       => $this->loaded() ? $this->get_value($_key, Model::GET_TYPE_EDIT) : $this->get_value($_key, Model::GET_TYPE_ADD),
                 'placeholder' => 'Введите ' . $labels[$_key],
             );
 
@@ -283,9 +158,9 @@ class Anaconda_ORM extends Kohana_ORM
             }
 
             default :
-                {
+            {
                 return View_Form_Field::TEXT;
-                }
+            }
         }
     }
 

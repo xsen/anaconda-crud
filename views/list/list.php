@@ -20,8 +20,9 @@
         <? if ( !$model->can_view() ) continue; ?>
         <tr>
             <? foreach ($columns as $_key => $_name) :?>
+                <? $_value = $model->get_value($_key, Model::GET_TYPE_LIST )?>
                 <td>
-                    <?= in_array($_key, $column_links) ? '<a href="'.$model->get_url().'">'.$model->get_value_list($_key).'</a>' : $model->get_value_list($_key) ?>
+                    <?= in_array($_key, $column_links) ? '<a href="'.$model->get_url().'">'.$_value.'</a>' : $_value ?>
                 </td>
             <? endforeach;?>
         </tr>

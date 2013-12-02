@@ -5,7 +5,7 @@
 <dl class="dl-horizontal">
     <? foreach ($fields as $_key => $_field) :?>
         <dt><?=$_field?></dt>
-        <dd><?=$model->get_value_view($_key)?></dd>
+        <dd><?=$model->get_value($_key, Model::GET_TYPE_ITEM)?></dd>
         <br>
     <?endforeach;?>
 </dl>
