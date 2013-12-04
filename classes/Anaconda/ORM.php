@@ -17,6 +17,17 @@ class Anaconda_ORM extends Kohana_ORM
      */
     protected $_auto_HTML_encode = true;
 
+
+    /**
+     * Displays the primary key of a model when it is converted to a string.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string) $this->get_name();
+    }
+
     /**
      * Фильтры для валидации данных
      *
@@ -57,8 +68,6 @@ class Anaconda_ORM extends Kohana_ORM
             if ($_column['data_type'] != 'date') {
                 continue;
             }
-
-            $this->$_key = $this->_convert_date_to_mysql($this->$_key);
         }
 
         parent::save($validation);
@@ -106,7 +115,7 @@ class Anaconda_ORM extends Kohana_ORM
      */
     public function get_name()
     {
-        return $this->name;
+        return $this->pk();
     }
 
     /**

@@ -112,7 +112,7 @@ abstract class Anaconda_Model extends Kohana_Model {
      */
     public function get_fields_edit()
     {
-        return $this->labels();
+        return $this->get_fields_add();
     }
 
 }
