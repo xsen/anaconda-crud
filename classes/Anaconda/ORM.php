@@ -68,6 +68,8 @@ class Anaconda_ORM extends Kohana_ORM
             if ($_column['data_type'] != 'date') {
                 continue;
             }
+
+            $this->$_key = $this->_convert_date_to_mysql($this->$_key);
         }
 
         parent::save($validation);
@@ -78,7 +80,7 @@ class Anaconda_ORM extends Kohana_ORM
     {
         $route_name = isset( $routes[$this->_object_name] ) ? $this->_object_name : 'default';
 
-        $params = array('action' => $action);
+        $params = array('action' => $action, 'controller' => strtolower(Request::current()->controller()));
         if ($this->loaded()) {
             $params['id'] = $this->pk();
         }
@@ -135,10 +137,31 @@ class Anaconda_ORM extends Kohana_ORM
         foreach ($fields as $_key => $_name) {
             $params = array(
                 'value'       => $this->loaded() ? $this->get_value($_key, Model::GET_TYPE_EDIT) : $this->get_value($_key, Model::GET_TYPE_ADD),
+                'label'       => $labels[$_key],
                 'placeholder' => 'Введите ' . $labels[$_key],
             );
 
-            $field_type = $this->_get_form_field_type($columns[$_key]['data_type']);
+            if ( !isset($columns[$_key]['data_type']) ) {
+                $field_type = View_Form_Field::SELECT;
+
+                // load relationship
+                if ( array_key_exists($_key, $this->_belongs_to) ) {
+                    $relationship = $this->_belongs_to[$_key];
+                }elseif ( array_key_exists($_key, $this->_has_one) ) {
+                    $relationship = $this->_has_one[$_key];
+                }else {
+                    $field_type = View_Form_Field::MULTI_SELECT;
+                    $relationship = $this->_has_many[$_key];
+                }
+
+                $_key = $relationship['far_key'];
+
+                $params['value'] = $params['value']->pk();
+                $params['options'] = ORM::factory($relationship['model'])->get_list_of_relationship($this);
+            }else {
+                $field_type = $this->_get_form_field_type($columns[$_key]['data_type']);
+            }
+
             $view->add_field($field_type, $_key, $params);
         }
 
@@ -146,7 +169,7 @@ class Anaconda_ORM extends Kohana_ORM
     }
 
     /**
-     * Получение типа поля для конкретног типа данных
+     * Получение типа поля для конкретного типа данных
      *
      * @param string $data_type
      *
@@ -171,6 +194,19 @@ class Anaconda_ORM extends Kohana_ORM
                 return View_Form_Field::TEXT;
             }
         }
+    }
+
+
+    protected function get_list_of_relationship($parent)
+    {
+        $list = array();
+        $objects = $this->find_all();
+
+        foreach ($objects as $_object) {
+            $list[$_object->pk()] = $_object->get_name();
+        }
+
+        return $list;
     }
 
     /**

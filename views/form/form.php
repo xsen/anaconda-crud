@@ -6,7 +6,7 @@
     <? endif;?>
 
     <? if ($action_buttons[View_Form::BUTTON_DELETE]) :?>
-        <button type="submit" class="btn btn-default">Сохранить</button>
+        <button type="submit" class="btn btn-default">Удалить</button>
     <? endif;?>
 
     <? if ($action_buttons[View_Form::BUTTON_CANCEL]) :?>
