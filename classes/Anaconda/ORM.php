@@ -130,8 +130,8 @@ class Anaconda_ORM extends Kohana_ORM
      */
     public function generate_fields_for_form(View_Form $view, Array $types = array())
     {
-        $labels = $this->labels();
-        $fields = $this->loaded() ? $this->get_fields_edit() : $this->get_fields_add();
+        $labels  = $this->labels();
+        $fields  = $this->loaded() ? $this->get_fields_edit() : $this->get_fields_add();
         $columns = $this->table_columns();
 
         foreach ($fields as $_key => $_name) {
@@ -154,7 +154,7 @@ class Anaconda_ORM extends Kohana_ORM
                     $relationship = $this->_has_many[$_key];
                 }
 
-                $_key = $relationship['far_key'];
+                $_key = $relationship['foreign_key'];
 
                 $params['value'] = $params['value']->pk();
                 $params['options'] = ORM::factory($relationship['model'])->get_list_of_relationship($this);
