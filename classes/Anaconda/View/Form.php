@@ -35,8 +35,8 @@ class Anaconda_View_Form extends Anaconda_View {
      */
     protected $action_buttons = array(
         self::BUTTON_SAVE   => TRUE,
-        self::BUTTON_CANCEL => TRUE,
-        self::BUTTON_DELETE => FALSE
+        self::BUTTON_CANCEL => false,
+        self::BUTTON_DELETE => false
     );
 
     /**
@@ -79,7 +79,9 @@ class Anaconda_View_Form extends Anaconda_View {
     public function render()
     {
         $view = View::factory($this->view_name);
+        $view->title = $this->title;
         $view->action_buttons = $this->action_buttons;
+
         $fields = '';
 
         foreach ($this->get_fields() as $_field) {

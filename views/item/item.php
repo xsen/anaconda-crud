@@ -12,9 +12,9 @@
 
 <div class="well">
     <? if ($action_buttons[View_Item::BUTTON_EDIT]) :?>
-        <a href="<?=$model->get_url('edit')?>" class="btn btn-default">Редактировать</a>
+        <a href="<?=$model->get_url('edit')?>" class="btn btn-primary">Редактировать</a>
     <? endif;?>
     <? if ($action_buttons[View_Item::BUTTON_DELETE]) :?>
-        <a href="<?=$model->get_url('delete')?>" class="btn btn-default">Удалить</a>
+        <a href="<?=$model->get_url('delete')?>" class="btn btn-danger">Удалить</a>
     <? endif;?>
 </div>

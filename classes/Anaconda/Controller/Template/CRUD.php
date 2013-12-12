@@ -9,7 +9,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
     public function before()
     {
         parent::before();
-        $this->category_url = Route::url('default', array('controller' => $this->request->controller()));
+        $this->category_url =Route::url('default', array('controller' => strtolower(Request::current()->controller())));
         $this->add_crumb($this::get_name(),  $this->category_url);
     }
 
@@ -30,6 +30,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
     public function action_view()
     {
+
         $model = ORM::factory($this->model_name, (int) $this->request->param('id'));
 
         if ( ! $model->loaded() ) throw new HTTP_Exception_404;
@@ -56,7 +57,9 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
         $errors = array();
         if ( $this->request->method() == Request::POST ) {
+
             $model->values($this->request->post());
+
             try {
                 $model->save();
             }catch (ORM_Validation_Exception $e) { $errors = $e->errors(); }
@@ -67,12 +70,13 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $this->add_crumb($model->loaded() ? 'Редактирование' : 'Создание', '#');
 
         $action_buttons = array(
-            View_Form::BUTTON_DELETE => $model->loaded(),
-            View_Form::BUTTON_CANCEL => TRUE,
+            View_Form::BUTTON_DELETE => $model->loaded() ? $model->get_url('delete') : null,
+            View_Form::BUTTON_CANCEL => $model->loaded() ? $model->get_url('view') : $this->category_url,
             View_Form::BUTTON_SAVE   => TRUE,
         );
 
         $view = $model->generate_fields_for_form(new View_Form);
+        $view->set_title($model->loaded() ? 'Редактирование' : 'Создание');
         $view->set_buttons_view($action_buttons);
         $view->errors($errors);
 
@@ -106,6 +110,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
     {
         return ORM::factory($this->model_name)->find_all()->as_array();
     }
+
 }
 
 ?>
