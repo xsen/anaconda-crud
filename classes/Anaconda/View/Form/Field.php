@@ -5,6 +5,7 @@ class Anaconda_View_Form_Field {
     const DATE = 'date';
     const FILE = 'file';
     const TEXT = 'text';
+    const INT = 'int';
     const VIEW = 'view';
     const SELECT = 'select';
     const MULTI_SELECT = 'multi_select';

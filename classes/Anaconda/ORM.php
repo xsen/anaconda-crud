@@ -141,25 +141,35 @@ class Anaconda_ORM extends Kohana_ORM
                 'placeholder' => 'Введите ' . $labels[$_key],
             );
 
-            if ( !isset($columns[$_key]['data_type']) ) {
-                $field_type = View_Form_Field::SELECT;
+            $field_type = View_Form_Field::TEXT;
 
-                // load relationship
-                if ( array_key_exists($_key, $this->_belongs_to) ) {
-                    $relationship = $this->_belongs_to[$_key];
-                }elseif ( array_key_exists($_key, $this->_has_one) ) {
-                    $relationship = $this->_has_one[$_key];
-                }else {
-                    $field_type = View_Form_Field::MULTI_SELECT;
-                    $relationship = $this->_has_many[$_key];
+
+            // Default types
+            if ( isset($columns[$_key]['data_type']) ) {
+                $field_type = $this->_get_form_field_type($columns[$_key]['data_type']);
+
+                if ( $columns[$_key]['data_type'] == 'enum' ) {
+                    foreach( $columns[$_key]['options'] as $_options ) {
+                        $params['options'][$_options] = $_options;
+                    }
                 }
+            }
 
-                $_key = $relationship['foreign_key'];
+            // Extended types
+            if ( array_key_exists($_key, $types) ) {
+                $field_type = $types[$_key];
+            }
+
+            // Relationships types
+            $all_relationships = array_merge($this->_belongs_to, $this->_has_many, $this->_has_one);
+            if ( array_key_exists($_key, $all_relationships) ) {
+                $relationship = $all_relationships[$_key];
 
                 $params['value'] = $params['value']->pk();
                 $params['options'] = ORM::factory($relationship['model'])->get_list_of_relationship($this);
-            }else {
-                $field_type = $this->_get_form_field_type($columns[$_key]['data_type']);
+
+                $field_type = array_key_exists($_key, $this->_has_many) ? View_Form_Field::MULTI_SELECT : View_Form_Field::SELECT;
+                $_key = $relationship['foreign_key'];
             }
 
             $view->add_field($field_type, $_key, $params);
@@ -184,9 +194,24 @@ class Anaconda_ORM extends Kohana_ORM
                 return View_Form_Field::DATE;
             }
 
-            case 'string' :
+            case 'enum' :
+            {
+                return View_Form_Field::SELECT;
+            }
+
+            case 'text' :
             {
                 return View_Form_Field::TEXTAREA;
+            }
+
+            case 'int' :
+            {
+                return View_Form_Field::INT;
+            }
+
+            case 'varchar' :
+            {
+                return View_Form_Field::TEXT;
             }
 
             default :

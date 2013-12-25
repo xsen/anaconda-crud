@@ -2,8 +2,10 @@
 
 abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
-    protected $model_name;
     protected $actions = array(View_List::BUTTON_ADD => true, View_List::BUTTON_EDIT => true, View_List::BUTTON_DELETE => true);
+    protected $edit_field_types = array();
+
+    protected $model_name;
     protected $category_url;
 
     public function before()
@@ -57,7 +59,6 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
         $errors = array();
         if ( $this->request->method() == Request::POST ) {
-
             $model->values($this->request->post());
 
             try {
@@ -75,7 +76,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
             View_Form::BUTTON_SAVE   => TRUE,
         );
 
-        $view = $model->generate_fields_for_form(new View_Form);
+        $view = $model->generate_fields_for_form(new View_Form, $this->edit_field_types);
         $view->set_title($model->loaded() ? 'Редактирование' : 'Создание');
         $view->set_buttons_view($action_buttons);
         $view->errors($errors);
