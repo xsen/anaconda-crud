@@ -2,8 +2,8 @@
 
 abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
-    protected $actions = array(View_List::BUTTON_ADD => true, View_List::BUTTON_EDIT => true, View_List::BUTTON_DELETE => true);
     protected $edit_field_types = array();
+    protected $actions = array(View_List::BUTTON_ADD => true, View_List::BUTTON_EDIT => true, View_List::BUTTON_DELETE => true);
 
     protected $model_name;
     protected $category_url;

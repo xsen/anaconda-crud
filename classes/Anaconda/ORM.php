@@ -17,6 +17,7 @@ class Anaconda_ORM extends Kohana_ORM
      */
     protected $_auto_HTML_encode = true;
 
+    protected $_files = array();
 
     /**
      * Displays the primary key of a model when it is converted to a string.
@@ -49,6 +50,118 @@ class Anaconda_ORM extends Kohana_ORM
         }
 
         return $filters;
+    }
+
+    protected function _initialize()
+    {
+        // Set the object name and plural name
+        $this->_object_name = strtolower(substr(get_class($this), 6));
+
+        // Check if this model has already been initialized
+        if ( ! $init = Arr::get(ORM::$_init_cache, $this->_object_name, FALSE))
+        {
+            $init = array(
+                '_belongs_to' => array(),
+                '_has_one'    => array(),
+                '_has_many'   => array(),
+                '_files'      => array(),
+            );
+
+            // Set the object plural name if none predefined
+            if ( ! isset($this->_object_plural))
+            {
+                $init['_object_plural'] = Inflector::plural($this->_object_name);
+            }
+
+            if ( ! $this->_errors_filename)
+            {
+                $init['_errors_filename'] = $this->_object_name;
+            }
+
+            if ( ! is_object($this->_db))
+            {
+                // Get database instance
+                $init['_db'] = Database::instance($this->_db_group);
+            }
+
+            if (empty($this->_table_name))
+            {
+                // Table name is the same as the object name
+                $init['_table_name'] = $this->_object_name;
+
+                if ($this->_table_names_plural === TRUE)
+                {
+                    // Make the table name plural
+                    $init['_table_name'] = Arr::get($init, '_object_plural', $this->_object_plural);
+                }
+            }
+
+            $defaults = array();
+
+            foreach ($this->_belongs_to as $alias => $details)
+            {
+                if ( ! isset($details['model']))
+                {
+                    $defaults['model'] = str_replace(' ', '_', ucwords(str_replace('_', ' ', $alias)));
+                }
+
+                $defaults['foreign_key'] = $alias.$this->_foreign_key_suffix;
+
+                $init['_belongs_to'][$alias] = array_merge($defaults, $details);
+            }
+
+            foreach ($this->_files as $alias)
+            {
+                $defaults['model'] = 'File';
+                $defaults['foreign_key'] = 'file'.$this->_foreign_key_suffix;
+
+                $init['_files'][$alias] = $defaults;
+            }
+
+            foreach ($this->_has_one as $alias => $details)
+            {
+                if ( ! isset($details['model']))
+                {
+                    $defaults['model'] = str_replace(' ', '_', ucwords(str_replace('_', ' ', $alias)));
+                }
+
+                $defaults['foreign_key'] = $this->_object_name.$this->_foreign_key_suffix;
+
+                $init['_has_one'][$alias] = array_merge($defaults, $details);
+            }
+
+            foreach ($this->_has_many as $alias => $details)
+            {
+                if ( ! isset($details['model']))
+                {
+                    $defaults['model'] = str_replace(' ', '_', ucwords(str_replace('_', ' ', Inflector::singular($alias))));
+                }
+
+                $defaults['foreign_key'] = $this->_object_name.$this->_foreign_key_suffix;
+                $defaults['through'] = NULL;
+
+                if ( ! isset($details['far_key']))
+                {
+                    $defaults['far_key'] = Inflector::singular($alias).$this->_foreign_key_suffix;
+                }
+
+                $init['_has_many'][$alias] = array_merge($defaults, $details);
+            }
+
+            ORM::$_init_cache[$this->_object_name] = $init;
+        }
+
+        // Assign initialized properties to the current object
+        foreach ($init as $property => $value)
+        {
+            $this->{$property} = $value;
+        }
+
+        // Load column information
+        $this->reload_columns();
+
+        // Clear initial model state
+        $this->clear();
     }
 
     /**
@@ -92,7 +205,7 @@ class Anaconda_ORM extends Kohana_ORM
      * Handles getting of column
      * Override this method to add custom get behavior
      *
-     * Добавлена конвертация данных для коректного получение полей с типом Date
+     * Добавлена конвертация данных для коректного получение полей с типом Date // TODO обновить
      *
      * @param   string $column Column name
      *
@@ -101,14 +214,23 @@ class Anaconda_ORM extends Kohana_ORM
      */
     public function get($column)
     {
-        $value = parent::get($column);
-        $columns = $this->table_columns();
+        if (isset($this->_files[$column]))
+        {
+            $model = ORM::factory($this->_files[$column]['model']);
+            $col = $model->_object_name.'.'.$this->_files[$column]['foreign_key'];
+            $val = $this->pk();
 
-        if (isset( $columns[$column]['data_type'] ) AND $columns[$column]['data_type'] == 'date') {
-            $value = $this->_get_date($value);
+            return $model->where($col, '=', $val);
+        }else {
+            $value = parent::get($column);
+            $columns = $this->table_columns();
+
+            if (isset( $columns[$column]['data_type'] ) AND $columns[$column]['data_type'] == 'date') {
+                $value = $this->_get_date($value);
+            }
+
+            return $value;
         }
-
-        return $value;
     }
 
     /**
@@ -170,6 +292,10 @@ class Anaconda_ORM extends Kohana_ORM
 
                 $field_type = array_key_exists($_key, $this->_has_many) ? View_Form_Field::MULTI_SELECT : View_Form_Field::SELECT;
                 $_key = $relationship['foreign_key'];
+            }
+
+            if ( array_key_exists($_key, $this->_files) ) {
+                $field_type = View_Form_Field::FILE;
             }
 
             $view->add_field($field_type, $_key, $params);
