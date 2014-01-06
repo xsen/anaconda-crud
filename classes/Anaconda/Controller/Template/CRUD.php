@@ -81,6 +81,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $view->set_buttons_view($action_buttons);
         $view->errors($errors);
 
+        $view = $this->_custom_set_field($view, $model);
         echo $view->render();
     }
 
@@ -110,6 +111,20 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
     protected function get_list()
     {
         return ORM::factory($this->model_name)->find_all()->as_array();
+    }
+
+
+    /**
+     * Функция выводить в бразуер данные без авто подгрузки шаблонов
+     *
+     * @param View_Form $view
+     * @param ORM $model
+
+     * @return  View_Form
+     */
+    protected function _custom_set_field($view, $model)
+    {
+        return $view;
     }
 
 }
