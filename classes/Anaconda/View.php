@@ -54,6 +54,16 @@ abstract class Anaconda_View {
     }
 
     /**
+     * Установка layout'a
+     *
+     * @param string $view_name
+     */
+    public function set_view($view_name)
+    {
+        $this->view_name = $view_name;
+    }
+
+    /**
      * Настройка показа конкретной кнопки
      *
      * @param string  $type_button

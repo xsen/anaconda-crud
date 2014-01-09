@@ -257,6 +257,7 @@ class Anaconda_ORM extends Kohana_ORM
         $columns = $this->table_columns();
 
         foreach ($fields as $_key => $_name) {
+
             $params = array(
                 'value'       => $this->loaded() ? $this->get_value($_key, Model::GET_TYPE_EDIT) : $this->get_value($_key, Model::GET_TYPE_ADD),
                 'label'       => $labels[$_key],
@@ -264,7 +265,6 @@ class Anaconda_ORM extends Kohana_ORM
             );
 
             $field_type = View_Form_Field::TEXT;
-
 
             // Default types
             if ( isset($columns[$_key]['data_type']) ) {

@@ -13,7 +13,7 @@ class Anaconda_View_Form_Field {
     const PASSWORD = 'password';
     const CHECKBOX = 'checkbox';
     const HIDDEN = 'hiden';
-    const EXCLUDE = 'exclude';
+    const EXCLUDE = null;
 
     protected $key;
     protected $type;

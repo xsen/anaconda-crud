@@ -2,16 +2,13 @@
 
 abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
-    protected $edit_field_types = array();
-    protected $actions = array(View_List::BUTTON_ADD => true, View_List::BUTTON_EDIT => true, View_List::BUTTON_DELETE => true);
-
     protected $model_name;
     protected $category_url;
 
     public function before()
     {
         parent::before();
-        $this->category_url =Route::url('default', array('controller' => strtolower(Request::current()->controller())));
+        $this->category_url = Route::url('default', array('controller' => strtolower(Request::current()->controller())));
         $this->add_crumb($this::get_name(),  $this->category_url);
     }
 
@@ -20,12 +17,15 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $this->action_list();
     }
 
+    protected $list_links = array('name');
+    protected $list_actions = array(View_List::BUTTON_ADD => true, View_List::BUTTON_EDIT => true, View_List::BUTTON_DELETE => true);
+
     public function action_list()
     {
         $view = new View_List($this->model_name, $this->get_list());
         $view->set_title($this::get_name());
-        $view->set_buttons_view($this->actions);
-        $view->set_column_link(array('name'));
+        $view->set_buttons_view($this->list_actions);
+        $view->set_column_link($this->list_links);
 
         echo $view->render();
     }
@@ -52,6 +52,8 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         echo $view->render();
     }
 
+    protected $edit_field_types = array();
+
     public function action_add($edit = null)
     {
         $model = $edit ? $edit : ORM::factory($this->model_name);
@@ -59,7 +61,9 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
         $errors = array();
         if ( $this->request->method() == Request::POST ) {
+
             $model->values($this->request->post());
+            $model = $this->_before_model_save($model);
 
             try {
                 $model->save();
@@ -81,7 +85,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $view->set_buttons_view($action_buttons);
         $view->errors($errors);
 
-        $view = $this->_custom_set_field($view, $model);
+        $view = $this->_before_form_render($view, $model);
         echo $view->render();
     }
 
@@ -115,16 +119,24 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
 
     /**
-     * Функция выводить в бразуер данные без авто подгрузки шаблонов
-     *
      * @param View_Form $view
      * @param ORM $model
 
      * @return  View_Form
      */
-    protected function _custom_set_field($view, $model)
+    protected function _before_form_render($view, $model)
     {
         return $view;
+    }
+
+    /**
+     * @param ORM $model
+
+     * @return ORM
+     */
+    protected function _before_model_save($model)
+    {
+        return $model;
     }
 
 }

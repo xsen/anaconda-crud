@@ -50,8 +50,10 @@ class Anaconda_View_Form extends Anaconda_View {
      */
     public function add_field($field_type, $key, Array $params = array())
     {
-        $field = View_Form_Field::factory($field_type, $key, $params);
-        $this->_fields[$key] = $field;
+        if ( $field_type != View_Form_Field::EXCLUDE ) {
+            $field = View_Form_Field::factory($field_type, $key, $params);
+            $this->_fields[$key] = $field;
+        }
     }
 
     /**
