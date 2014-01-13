@@ -257,7 +257,7 @@ class Anaconda_ORM extends Kohana_ORM
         $columns = $this->table_columns();
 
         foreach ($fields as $_key => $_name) {
-
+            $_old_key = $_key;
             $params = array(
                 'value'       => $this->loaded() ? $this->get_value($_key, Model::GET_TYPE_EDIT) : $this->get_value($_key, Model::GET_TYPE_ADD),
                 'label'       => $labels[$_key],
@@ -287,15 +287,25 @@ class Anaconda_ORM extends Kohana_ORM
             if ( array_key_exists($_key, $all_relationships) ) {
                 $relationship = $all_relationships[$_key];
 
-                $params['value'] = $params['value']->pk();
-                $params['options'] = ORM::factory($relationship['model'])->get_list_of_relationship($this);
+                if ( array_key_exists($_key, $this->_has_many) ) {
+                    $field_type = View_Form_Field::MULTI_SELECT ;
+                    $params['value'] = $params['value']->find_all()->as_array(null, $params['value']->primary_key());
+                }else {
+                    $field_type = View_Form_Field::SELECT ;
+                    $params['value'] = $params['value']->pk();
+                }
 
-                $field_type = array_key_exists($_key, $this->_has_many) ? View_Form_Field::MULTI_SELECT : View_Form_Field::SELECT;
+                $params['options'] = ORM::factory($relationship['model'])->get_list_of_relationship($this);
                 $_key = $relationship['foreign_key'];
             }
 
             if ( array_key_exists($_key, $this->_files) ) {
                 $field_type = View_Form_Field::FILE;
+            }
+
+            $select_types = array(View_Form_Field::MULTI_SELECT, View_Form_Field::SELECT);
+            if ( in_array($field_type, $select_types) ) {
+                $params['placeholder'] = 'Выберите ' . $labels[$_old_key];
             }
 
             $view->add_field($field_type, $_key, $params);

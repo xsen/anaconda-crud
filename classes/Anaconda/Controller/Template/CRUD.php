@@ -49,6 +49,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $view->set_title($this::get_name());
         $view->set_buttons_view($action_buttons);
 
+        $view = $this->_before_item_render($view, $model);
         echo $view->render();
     }
 
@@ -61,7 +62,6 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
         $errors = array();
         if ( $this->request->method() == Request::POST ) {
-
             $model->values($this->request->post());
             $model = $this->_before_model_save($model);
 
@@ -125,6 +125,17 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
      * @return  View_Form
      */
     protected function _before_form_render($view, $model)
+    {
+        return $view;
+    }
+
+    /**
+     * @param View_Form $view
+     * @param ORM $model
+
+     * @return  View_Form
+     */
+    protected function _before_item_render($view, $model)
     {
         return $view;
     }

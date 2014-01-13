@@ -25,6 +25,10 @@ abstract class Anaconda_View {
      */
     protected $action_buttons;
 
+    /**
+     * @var array Массив для передачи дополнительных значений в View
+     */
+    protected $params = array();
 
     /**
      * setter title
@@ -34,6 +38,15 @@ abstract class Anaconda_View {
     public function set_title($title)
     {
         $this->title = $title;
+    }
+    /**
+     *
+     * @param string $param
+     * @param mixed $value
+     */
+    public function set_param($param, $value)
+    {
+        $this->params[$param] = $value;
     }
 
     // TODO: описать
@@ -49,6 +62,10 @@ abstract class Anaconda_View {
     {
         $view = View::factory($this->view_name);
         $view->title = $this->title;
+
+        foreach ($this->params as $_key => $_value) {
+            $view->{$_key} = $_value;
+        }
 
         return $view;
     }

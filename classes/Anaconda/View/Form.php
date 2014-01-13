@@ -90,6 +90,10 @@ class Anaconda_View_Form extends Anaconda_View {
             $fields .= $_field->render();
         }
 
+        foreach ($this->params as $_key => $_value) {
+            $view->{$_key} = $_value;
+        }
+
         $view->fields = $fields;
 
         return $view;

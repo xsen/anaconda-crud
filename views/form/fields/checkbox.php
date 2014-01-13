@@ -5,8 +5,8 @@
     <div class="col-lg-8">
         <div class="checkbox">
             <label>
-                <input type="hidden" name="<?=$key?>" value="" />
-                <input type="checkbox"  id="<?=$key?>" name="<?=$key?>" value="да" <? if ($value) echo 'checked="checked"';?>> отметить
+                <input type="hidden" name="<?=$key?>" value="Нет" />
+                <input type="checkbox"  id="<?=$key?>" name="<?=$key?>" value="Да" <? if ($value) echo 'checked="checked"';?>> отметить
             </label>
         </div>
     </div>
