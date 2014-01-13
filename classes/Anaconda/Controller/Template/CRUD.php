@@ -22,11 +22,14 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
     public function action_list()
     {
-        $view = new View_List($this->model_name, $this->get_list());
+        $list = $this->get_list();
+
+        $view = new View_List($this->model_name, $list);
         $view->set_title($this::get_name());
         $view->set_buttons_view($this->list_actions);
         $view->set_column_link($this->list_links);
 
+        $view = $this->_before_list_render($view, $list);
         echo $view->render();
     }
 
@@ -136,6 +139,17 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
      * @return  View_Form
      */
     protected function _before_item_render($view, $model)
+    {
+        return $view;
+    }
+
+    /**
+     * @param View_Form $view
+     * @param ORM $model
+
+     * @return  View_Form
+     */
+    protected function _before_list_render($view, $model)
     {
         return $view;
     }
