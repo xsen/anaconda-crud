@@ -3,7 +3,7 @@
         <div class="box">
         <header>
             <div class="icons">
-                <? if ( $action_buttons[View_List::BUTTON_ADD] AND $model->can_add() ) :?>
+                <? if ( $action_buttons[View_List::BUTTON_ADD] AND $model->can_create() ) :?>
                     <div class="btn-group">
                         <a href="<?=$model->get_url('add')?>" class="btn btn-sm btn-primary">
                             <i class="glyphicon-plus glyphicon"></i>

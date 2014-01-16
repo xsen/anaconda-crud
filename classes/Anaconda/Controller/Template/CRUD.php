@@ -60,8 +60,11 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
     public function action_add($edit = null)
     {
+        /**
+         * @var ORM $model
+         */
         $model = $edit ? $edit : ORM::factory($this->model_name);
-        if ( !$model->loaded() AND !$model->can_add() ) throw new HTTP_Exception_403;
+        if ( !$model->loaded() AND !$model->can_create() ) throw new HTTP_Exception_403;
 
         $errors = array();
         if ( $this->request->method() == Request::POST ) {

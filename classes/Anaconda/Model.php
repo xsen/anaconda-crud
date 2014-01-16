@@ -25,7 +25,7 @@ abstract class Anaconda_Model extends Kohana_Model {
      * Метод для создание правил добавление объекта
      * @return boolean
      */
-    public function can_add()
+    public function can_create()
     {
         return true;
     }
@@ -36,7 +36,7 @@ abstract class Anaconda_Model extends Kohana_Model {
      */
     public function can_edit()
     {
-        return $this->can_add();
+        return $this->can_create();
     }
 
     /**

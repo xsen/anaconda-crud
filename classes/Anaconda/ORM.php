@@ -280,6 +280,10 @@ class Anaconda_ORM extends Kohana_ORM
             // Extended types
             if ( array_key_exists($_key, $types) ) {
                 $field_type = $types[$_key];
+
+                if ( $field_type == View_Form_Field::SELECT ) {
+                    $params['options'] = $this->get_options_for_select($_key);
+                }
             }
 
             // Relationships types
@@ -368,6 +372,16 @@ class Anaconda_ORM extends Kohana_ORM
         }
 
         return $list;
+    }
+
+    /**
+     * @param $key
+     *
+     * @return array
+     */
+    protected function get_options_for_select($key)
+    {
+        return array();
     }
 
     /**
