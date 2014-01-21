@@ -19,6 +19,7 @@ class Anaconda_View_Form_Field {
     protected $key;
     protected $type;
     protected $params;
+    protected $view;
     protected $path_templates = 'form/fields';
 
     public static function factory($field_type, $key, Array $params = array())
@@ -46,7 +47,9 @@ class Anaconda_View_Form_Field {
 
     public function render()
     {
-        $view =  View::factory($this->path_templates.DIRECTORY_SEPARATOR.$this->type);
+        $_template = $this->view ? $this->view : $this->path_templates.DIRECTORY_SEPARATOR.$this->type;
+
+        $view =  View::factory($_template);
         $view->key = $this->get_key();
 
         foreach ($this->params as $_key => $_value) {
@@ -54,6 +57,14 @@ class Anaconda_View_Form_Field {
         }
 
         return $view;
+    }
+
+    /**
+     * @param $view
+     */
+    public function set_view($view)
+    {
+        $this->view = $view;
     }
 }
 

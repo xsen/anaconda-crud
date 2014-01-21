@@ -73,6 +73,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
             try {
                 $model->save();
+                $model = $this->_after_model_save($model);
             }catch (ORM_Validation_Exception $e) { $errors = $e->errors(); }
 
             if (!$errors) $this->redirect($this->category_url);
@@ -163,6 +164,16 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
      * @return ORM
      */
     protected function _before_model_save($model)
+    {
+        return $model;
+    }
+
+    /**
+     * @param ORM $model
+
+     * @return ORM
+     */
+    protected function _after_model_save($model)
     {
         return $model;
     }
