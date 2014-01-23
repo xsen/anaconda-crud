@@ -11,6 +11,9 @@
 
 class Anaconda_ORM extends Kohana_ORM
 {
+    // @todo
+    protected $_history_save = false;
+    protected $_history_values;
 
     /**
      * @var boolean  Включить автоматическое преобразование всех HTML сущностей для защиты
@@ -50,6 +53,18 @@ class Anaconda_ORM extends Kohana_ORM
         }
 
         return $filters;
+    }
+
+    // @todo
+    protected function _load_values(array $values)
+    {
+        parent::_load_values($values);
+
+        if ( $this->_history_save ) {
+            $this->_history_values = $this->_original_values;
+        }
+
+        return $this;
     }
 
     protected function _initialize()
@@ -164,6 +179,7 @@ class Anaconda_ORM extends Kohana_ORM
         $this->clear();
     }
 
+    // @todo
     /**
      * Updates or Creates the record depending on loaded()
      * Добавлена конвертация всех полей с типом Date для корректного хранения
@@ -185,7 +201,26 @@ class Anaconda_ORM extends Kohana_ORM
             $this->$_key = $this->_convert_date_to_mysql($this->$_key);
         }
 
-        parent::save($validation);
+        $result = parent::save($validation);
+
+        if ( $this->_history_save AND $this->is_need_save_history() ) {
+            ORM::factory('History')->create_history($this, $this->_original_values, $this->_history_values);
+        }
+
+        return $result;
+    }
+
+    // @todo
+    public function is_need_save_history()
+    {
+        return $this->_history_save;
+    }
+
+    public function get_histories()
+    {
+        if ( !$this->_history_save ) throw new Exception('$this->_history_save need set true');
+
+        return ORM::factory('History')->where('model_name', '=', $this->object_name())->where('model_id', '=', $this->pk())->find_all();
     }
 
     // TODO: описать метод
@@ -252,7 +287,6 @@ class Anaconda_ORM extends Kohana_ORM
      */
     public function generate_fields_for_form(View_Form $view, Array $types = array())
     {
-        $labels  = $this->labels();
         $fields  = $this->loaded() ? $this->get_fields_edit() : $this->get_fields_add();
         $columns = $this->table_columns();
 
@@ -260,8 +294,8 @@ class Anaconda_ORM extends Kohana_ORM
             $_old_key = $_key;
             $params = array(
                 'value'       => $this->loaded() ? $this->get_value($_key, Model::GET_TYPE_EDIT) : $this->get_value($_key, Model::GET_TYPE_ADD),
-                'label'       => $labels[$_key],
-                'placeholder' => 'Введите ' . $labels[$_key],
+                'label'       => $_name,
+                'placeholder' => 'Введите ' . $_name,
             );
 
             $field_type = View_Form_Field::TEXT;
@@ -309,7 +343,7 @@ class Anaconda_ORM extends Kohana_ORM
 
             $select_types = array(View_Form_Field::MULTI_SELECT, View_Form_Field::SELECT);
             if ( in_array($field_type, $select_types) ) {
-                $params['placeholder'] = 'Выберите ' . $labels[$_old_key];
+                $params['placeholder'] = 'Выберите ' . $fields[$_old_key];
             }
 
             $view->add_field($field_type, $_key, $params);
