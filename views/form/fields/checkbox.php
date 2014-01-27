@@ -6,7 +6,7 @@
         <div class="checkbox">
             <label>
                 <input type="hidden" name="<?=$key?>" value="Нет" />
-                <input type="checkbox"  id="<?=$key?>" name="<?=$key?>" value="Да" <? if ($value) echo 'checked="checked"';?>> отметить
+                <input type="checkbox"  id="<?=$key?>" name="<?=$key?>" value="Да" <? if ($value) echo 'checked="checked"';?>>
             </label>
         </div>
     </div>
