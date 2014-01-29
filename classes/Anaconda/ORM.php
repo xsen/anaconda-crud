@@ -285,11 +285,14 @@ class Anaconda_ORM extends Kohana_ORM
      *
      * @return View_Form
      */
-    public function generate_fields_for_form(View_Form $view, Array $types = array())
+    public function generate_fields_for_form(View_Form $view, Array $types = array(), Array $fields = array())
     {
-        $fields  = $this->loaded() ? $this->get_fields_edit() : $this->get_fields_add();
-        $columns = $this->table_columns();
+        if ( !$fields )
+        {
+            $fields  = $this->loaded() ? $this->get_fields_edit() : $this->get_fields_add();
+        }
 
+        $columns = $this->table_columns();
         foreach ($fields as $_key => $_name) {
             $_old_key = $_key;
             $params = array(

@@ -35,6 +35,11 @@ class Anaconda_View_Form_Field {
         $this->params = $params;
     }
 
+    public function get_type()
+    {
+        return $this->type;
+    }
+
     public function get_key()
     {
         return $this->key;
