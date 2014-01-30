@@ -3,6 +3,7 @@
 class Anaconda_View_Form_Field {
 
     const DATE = 'date';
+    const DATETIME = 'datetime';
     const FILE = 'file';
     const TEXT = 'text';
     const INT = 'int';

@@ -368,6 +368,13 @@ class Anaconda_ORM extends Kohana_ORM
                 return View_Form_Field::DATE;
             }
 
+            case 'datetime' :
+            case 'timestamp' :
+            case 'timestamp without time zone' :
+            {
+                return View_Form_Field::DATETIME;
+            }
+
             case 'enum' :
             {
                 return View_Form_Field::SELECT;

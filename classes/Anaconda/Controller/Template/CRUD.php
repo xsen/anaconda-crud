@@ -35,7 +35,6 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
     public function action_view()
     {
-
         $model = ORM::factory($this->model_name, (int) $this->request->param('id'));
 
         if ( ! $model->loaded() ) throw new HTTP_Exception_404;
