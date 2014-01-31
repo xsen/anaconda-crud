@@ -23,6 +23,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
     public function action_list()
     {
         $view = new View_List('list/list');
+
         $view->model_name = $this->model_name;
         $view->list = $this->get_list();
         $view->title = $this::get_name();
@@ -43,22 +44,19 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
         $this->add_crumb($model->get_name(), $model->get_url('view'));
 
-        $action_buttons = array(
+        $view = new View_Item('item/item');
+
+        $view->model = $model;
+        $view->title = $this::get_name();
+        $view->action_buttons = array(
             View_Item::BUTTON_EDIT   => TRUE,
             View_Item::BUTTON_DELETE => TRUE,
         );
-
-        $view = new View_Item('item/item');
-        $view->model = $model;
-        $view->title = $this::get_name();
-        $view->action_buttons = $action_buttons;
 
         $this->_before_item_render($view);
 
         echo $view->render();
     }
-
-    protected $edit_field_types = array();
 
     public function action_add()
     {
@@ -67,7 +65,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         if ( !$model->can_create() ) throw new HTTP_Exception_403;
 
         $this->add_crumb('Создание', '#');
-        $this->model_form($model);
+        $this->_model_form($model);
     }
 
     public function action_edit()
@@ -78,10 +76,12 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         if ( ! $model->can_edit() ) throw new HTTP_Exception_403;
 
         $this->add_crumb($model->get_name(), $model->get_url());
-        $this->model_form($model);
+        $this->_model_form($model);
     }
 
-    public function model_form($model)
+    protected $edit_field_types = array();
+
+    protected function _model_form($model)
     {
         $errors = array();
         if ( $this->request->method() == Request::POST ) {
@@ -102,7 +102,8 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
             View_Form::BUTTON_SAVE   => TRUE,
         );
 
-        $view = $model->generate_fields_for_form(new View_Form('form/form'), $this->edit_field_types);
+        $view = new View_Form('form/form');
+        $model->generate_fields_for_form($view, $this->edit_field_types);
         $view->model = $model;
         $view->title = $model->loaded() ? 'Редактирование' : 'Создание';
         $view->action_buttons = $action_buttons;
@@ -125,61 +126,30 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $this->redirect($this->category_url);
     }
 
-
     protected function get_list()
     {
         return ORM::factory($this->model_name)->find_all()->as_array();
     }
 
-
-    /**
-     * @param View_Form $view
-     * @param ORM $model
-
-     * @return  View_Form
-     */
     protected function _before_form_render($view)
     {
     }
 
-    /**
-     * @param View_Form $view
-     * @param ORM $model
-
-     * @return  View_Form
-     */
     protected function _before_item_render($view)
     {
     }
 
-    /**
-     * @param View_Form $view
-     * @param ORM $model
-
-     * @return  View_Form
-     */
     protected function _before_list_render($view)
     {
     }
 
-    /**
-     * @param ORM $model
-
-     * @return ORM
-     */
     protected function _before_model_save($model)
     {
     }
 
-    /**
-     * @param ORM $model
-
-     * @return ORM
-     */
     protected function _after_model_save($model)
     {
     }
-
 }
 
 ?>
