@@ -60,14 +60,29 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
     protected $edit_field_types = array();
 
-    public function action_add($edit = null)
+    public function action_add()
     {
-        /**
-         * @var ORM $model
-         */
-        $model = $edit ? $edit : ORM::factory($this->model_name);
-        if ( !$model->loaded() AND !$model->can_create() ) throw new HTTP_Exception_403;
+        $model = ORM::factory($this->model_name);
 
+        if ( !$model->can_create() ) throw new HTTP_Exception_403;
+
+        $this->add_crumb('Создание', '#');
+        $this->model_form($model);
+    }
+
+    public function action_edit()
+    {
+        $model = ORM::factory($this->model_name, (int) $this->request->param('id'));
+
+        if ( ! $model->loaded() ) throw new HTTP_Exception_404;
+        if ( ! $model->can_edit() ) throw new HTTP_Exception_403;
+
+        $this->add_crumb($model->get_name(), $model->get_url());
+        $this->model_form($model);
+    }
+
+    public function model_form($model)
+    {
         $errors = array();
         if ( $this->request->method() == Request::POST ) {
             $model->values($this->request->post());
@@ -81,8 +96,6 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
             if (!$errors) $this->redirect($this->category_url);
         }
 
-        $this->add_crumb($model->loaded() ? 'Редактирование' : 'Создание', '#');
-
         $action_buttons = array(
             View_Form::BUTTON_DELETE => $model->loaded() ? $model->get_url('delete') : null,
             View_Form::BUTTON_CANCEL => $model->loaded() ? $model->get_url('view') : $this->category_url,
@@ -90,6 +103,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         );
 
         $view = $model->generate_fields_for_form(new View_Form('form/form'), $this->edit_field_types);
+        $view->model = $model;
         $view->title = $model->loaded() ? 'Редактирование' : 'Создание';
         $view->action_buttons = $action_buttons;
         $view->errors($errors);
@@ -97,16 +111,6 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $this->_before_form_render($view);
 
         echo $view->render();
-    }
-
-    public function action_edit()
-    {
-        $model = ORM::factory($this->model_name, (int) $this->request->param('id'));
-        if ( ! $model->loaded() ) throw new HTTP_Exception_404;
-        if ( ! $model->can_edit() ) throw new HTTP_Exception_403;
-
-        $this->add_crumb($model->get_name(), $model->get_url());
-        $this->action_add($model);
     }
 
     public function action_delete()
