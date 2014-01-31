@@ -9,12 +9,6 @@
  * @author     Evgeny Leshchenko
  */
 class Anaconda_View_Form extends Anaconda_View {
-
-    /**
-     * @var string  имя шаблона
-     */
-    public $view_name = 'form/form';
-
     /**
      * @var array поля не прошедшие валидацию формата key => error text
      */
@@ -30,14 +24,16 @@ class Anaconda_View_Form extends Anaconda_View {
     const BUTTON_CANCEL  = 2;
     const BUTTON_DELETE  = 3;
 
-    /**
-     * @var array Массив для настроки показа кнопок
-     */
-    protected $action_buttons = array(
-        self::BUTTON_SAVE   => TRUE,
-        self::BUTTON_CANCEL => false,
-        self::BUTTON_DELETE => false
-    );
+    public function __construct($file = NULL, array $data = NULL)
+    {
+        parent::__construct($file, $data);
+
+        $this->action_buttons = array(
+            self::BUTTON_SAVE   => TRUE,
+            self::BUTTON_CANCEL => false,
+            self::BUTTON_DELETE => false
+        );
+    }
 
     /**
      * Добавление поля
@@ -78,25 +74,16 @@ class Anaconda_View_Form extends Anaconda_View {
      *
      * @return View
      */
-    public function render()
+    public function render($file = NULL)
     {
-        $view = View::factory($this->view_name);
-        $view->title = $this->title;
-        $view->action_buttons = $this->action_buttons;
-
         $fields = '';
 
         foreach ($this->get_fields() as $_field) {
             $fields .= $_field->render();
         }
 
-        foreach ($this->params as $_key => $_value) {
-            $view->{$_key} = $_value;
-        }
-
-        $view->fields = $fields;
-
-        return $view;
+        $this->fields = $fields;
+        return parent::render($file);
     }
 
     /**

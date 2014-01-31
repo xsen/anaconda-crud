@@ -18,18 +18,19 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
     }
 
     protected $list_links = array('name');
-    protected $list_actions = array(View_List::BUTTON_ADD => true, View_List::BUTTON_EDIT => true, View_List::BUTTON_DELETE => true);
+    protected $list_actions = array(Anaconda_View_List::BUTTON_ADD => true, Anaconda_View_List::BUTTON_EDIT => true, Anaconda_View_List::BUTTON_DELETE => true);
 
     public function action_list()
     {
-        $list = $this->get_list();
-
-        $view = new View_List($this->model_name, $list);
-        $view->set_title($this::get_name());
-        $view->set_buttons_view($this->list_actions);
+        $view = new View_List('list/list');
+        $view->model_name = $this->model_name;
+        $view->list = $this->get_list();
+        $view->title = $this::get_name();
+        $view->action_buttons = $this->list_actions;
         $view->set_column_link($this->list_links);
 
-        $view = $this->_before_list_render($view, $list);
+        $this->_before_list_render($view);
+
         echo $view->render();
     }
 
@@ -47,11 +48,13 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
             View_Item::BUTTON_DELETE => TRUE,
         );
 
-        $view = new View_Item($model);
-        $view->set_title($this::get_name());
-        $view->set_buttons_view($action_buttons);
+        $view = new View_Item('item/item');
+        $view->model = $model;
+        $view->title = $this::get_name();
+        $view->action_buttons = $action_buttons;
 
-        $view = $this->_before_item_render($view, $model);
+        $this->_before_item_render($view);
+
         echo $view->render();
     }
 
@@ -68,11 +71,11 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $errors = array();
         if ( $this->request->method() == Request::POST ) {
             $model->values($this->request->post());
-            $model = $this->_before_model_save($model);
+            $this->_before_model_save($model);
 
             try {
                 $model->save();
-                $model = $this->_after_model_save($model);
+                $this->_after_model_save($model);
             }catch (ORM_Validation_Exception $e) { $errors = $e->errors(); }
 
             if (!$errors) $this->redirect($this->category_url);
@@ -86,12 +89,13 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
             View_Form::BUTTON_SAVE   => TRUE,
         );
 
-        $view = $model->generate_fields_for_form(new View_Form, $this->edit_field_types);
-        $view->set_title($model->loaded() ? 'Редактирование' : 'Создание');
-        $view->set_buttons_view($action_buttons);
+        $view = $model->generate_fields_for_form(new View_Form('form/form'), $this->edit_field_types);
+        $view->title = $model->loaded() ? 'Редактирование' : 'Создание';
+        $view->action_buttons = $action_buttons;
         $view->errors($errors);
 
-        $view = $this->_before_form_render($view, $model);
+        $this->_before_form_render($view);
+
         echo $view->render();
     }
 
@@ -130,9 +134,8 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
      * @return  View_Form
      */
-    protected function _before_form_render($view, $model)
+    protected function _before_form_render($view)
     {
-        return $view;
     }
 
     /**
@@ -141,9 +144,8 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
      * @return  View_Form
      */
-    protected function _before_item_render($view, $model)
+    protected function _before_item_render($view)
     {
-        return $view;
     }
 
     /**
@@ -152,9 +154,8 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
      * @return  View_Form
      */
-    protected function _before_list_render($view, $model)
+    protected function _before_list_render($view)
     {
-        return $view;
     }
 
     /**
@@ -164,7 +165,6 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
      */
     protected function _before_model_save($model)
     {
-        return $model;
     }
 
     /**
@@ -174,7 +174,6 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
      */
     protected function _after_model_save($model)
     {
-        return $model;
     }
 
 }
