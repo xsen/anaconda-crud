@@ -10,7 +10,11 @@
             <div id="div-1" class="accordion-body collapse in body">
                 <form role="form" method="POST" class="form-horizontal">
 
-                    <?=$fields?>
+                    <?
+                    foreach($fields as $key => $field) {
+                        echo $field;
+                    }
+                    ?>
 
                     <? if ($action_buttons[View_Form::BUTTON_SAVE]) :?>
                         <button type="submit" class="btn btn-primary">Сохранить</button>

@@ -17,42 +17,41 @@ class Anaconda_View_Form_Field extends View {
     const DISABLED = 'disabled';
     const EXCLUDE = null;
 
-    public $key;
-    public $type;
-    public $params = array();
+    protected $_key;
+    protected $_type;
 
-    protected $path_templates = 'form/fields';
+    protected $_path_templates = 'form/fields';
+
+    public static function factory($file = NULL, array $data = NULL)
+    {
+        return new static($file, $data);
+    }
 
     public function get_type()
     {
-        return $this->type;
+        $info = pathinfo($this->_file);
+        return $info['filename'];
     }
 
     public function set_type($type)
     {
-        return $this->key = $type;
+        $this->set_filename($type);
     }
 
     public function get_key()
     {
-        return $this->key;
+        return $this->_key;
     }
 
     public function set_key($key)
     {
-        return $this->key = $key;
-    }
-
-    public function render($file = NULL)
-    {
-        // $_template = $this->view ? $this->view : $this->path_templates.DIRECTORY_SEPARATOR.$this->type;
-        $this->set('key', $this->get_key());
-        return parent::render();
+        $this->_key = $key;
+        $this->set('key', $this->_key);
     }
 
     public function set_filename($file)
     {
-        $field_file = trim($this->path_templates, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+        $field_file = trim($this->_path_templates, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
 
         if (($path = Kohana::find_file('views', $field_file)) === FALSE)
         {
