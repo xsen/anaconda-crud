@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-class Anaconda_View_Form_Field {
+class Anaconda_View_Form_Field extends View {
 
     const DATE = 'date';
     const DATETIME = 'datetime';
@@ -17,28 +17,20 @@ class Anaconda_View_Form_Field {
     const DISABLED = 'disabled';
     const EXCLUDE = null;
 
-    protected $key;
-    protected $type;
-    protected $params;
-    protected $view;
+    public $key;
+    public $type;
+    public $params = array();
+
     protected $path_templates = 'form/fields';
-
-    public static function factory($field_type, $key, Array $params = array())
-    {
-        return new View_Form_Field($field_type, $key, $params);
-    }
-
-    public function __construct($field_type, $key, Array $params = array())
-    {
-        // TODO: check all params
-        $this->type = $field_type;
-        $this->key = $key;
-        $this->params = $params;
-    }
 
     public function get_type()
     {
         return $this->type;
+    }
+
+    public function set_type($type)
+    {
+        return $this->key = $type;
     }
 
     public function get_key()
@@ -51,26 +43,24 @@ class Anaconda_View_Form_Field {
         return $this->key = $key;
     }
 
-    public function render()
+    public function render($file = NULL)
     {
-        $_template = $this->view ? $this->view : $this->path_templates.DIRECTORY_SEPARATOR.$this->type;
-
-        $view =  View::factory($_template);
-        $view->key = $this->get_key();
-
-        foreach ($this->params as $_key => $_value) {
-            $view->{$_key} = $_value;
-        }
-
-        return $view;
+        // $_template = $this->view ? $this->view : $this->path_templates.DIRECTORY_SEPARATOR.$this->type;
+        $this->set('key', $this->get_key());
+        return parent::render();
     }
 
-    /**
-     * @param $view
-     */
-    public function set_view($view)
+    public function set_filename($file)
     {
-        $this->view = $view;
+        $field_file = trim($this->path_templates, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+
+        if (($path = Kohana::find_file('views', $field_file)) === FALSE)
+        {
+            return parent::set_filename($file);
+        }
+
+        $this->_file = $path;
+        return $this;
     }
 }
 
