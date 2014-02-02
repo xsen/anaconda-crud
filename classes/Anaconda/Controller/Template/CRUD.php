@@ -44,15 +44,7 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
         $this->add_crumb($model->get_name(), $model->get_url('view'));
 
-        $view = new View_Item('item/item');
-
-        $view->model = $model;
-        $view->title = $this::get_name();
-        $view->action_buttons = array(
-            View_Item::BUTTON_EDIT   => TRUE,
-            View_Item::BUTTON_DELETE => TRUE,
-        );
-
+        $view = $this->get_model_view($model);
         $this->_before_item_render($view);
 
         echo $view->render();
@@ -96,22 +88,41 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
             if (!$errors) $this->redirect($this->category_url);
         }
 
-        $action_buttons = array(
+        $form = $this->get_model_form($model);
+        $form->errors($errors);
+
+        $this->_before_form_render($form);
+
+        echo $form->render();
+    }
+
+    public function get_model_view($model)
+    {
+        $view = new View_Item('item/item');
+
+        $view->model = $model;
+        $view->title = $this::get_name();
+        $view->action_buttons = array(
+            View_Item::BUTTON_EDIT   => TRUE,
+            View_Item::BUTTON_DELETE => TRUE,
+        );
+
+        return $view;
+    }
+
+    public function get_model_form($model)
+    {
+        $form = new View_Form('form/form');
+        $model->generate_fields_for_form($form, $this->edit_field_types);
+        $form->model = $model;
+        $form->title = $model->loaded() ? 'Редактирование' : 'Создание';
+        $form->action_buttons = array(
             View_Form::BUTTON_DELETE => $model->loaded() ? $model->get_url('delete') : null,
             View_Form::BUTTON_CANCEL => $model->loaded() ? $model->get_url('view') : $this->category_url,
             View_Form::BUTTON_SAVE   => TRUE,
         );
 
-        $view = new View_Form('form/form');
-        $model->generate_fields_for_form($view, $this->edit_field_types);
-        $view->model = $model;
-        $view->title = $model->loaded() ? 'Редактирование' : 'Создание';
-        $view->action_buttons = $action_buttons;
-        $view->errors($errors);
-
-        $this->_before_form_render($view);
-
-        echo $view->render();
+        return $form;
     }
 
     public function action_delete()

@@ -3,7 +3,7 @@
 class Anaconda_View_Form extends Anaconda_View {
     public $errors = array();
     public $fields = array();
-    public $input_name = 'hello[world]';
+    public $input_name = '';
 
     const BUTTON_SAVE    = 1;
     const BUTTON_CANCEL  = 2;
