@@ -1,118 +1,74 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-/**
- * Класс для создания HTML форм
- *
- *
- * @package    Anaconda
- * @category   CRUD
- * @author     Evgeny Leshchenko
- */
 class Anaconda_View_Form extends Anaconda_View {
+    public $errors = array();
+    public $fields = array();
+    public $input_name = '';
 
-    /**
-     * @var string  имя шаблона
-     */
-    public $view_name = 'form/form';
-
-    /**
-     * @var array поля не прошедшие валидацию формата key => error text
-     */
-    protected $_errors = array();
-
-    /**
-     * @var array объекты View_Form_Field
-     */
-    protected $_fields = array();
-
-    // Константы кнопок класса
     const BUTTON_SAVE    = 1;
     const BUTTON_CANCEL  = 2;
     const BUTTON_DELETE  = 3;
 
-    /**
-     * @var array Массив для настроки показа кнопок
-     */
-    protected $action_buttons = array(
-        self::BUTTON_SAVE   => TRUE,
-        self::BUTTON_CANCEL => false,
-        self::BUTTON_DELETE => false
-    );
-
-    /**
-     * Добавление поля
-     *
-     * @param string $field_type Тип поля (см. константы View_Form_Field)
-     * @param string $key ключ поля (id, name)
-     * @param array  $params дополнительные параметры поля(value, placeholder, etc)
-     *
-     * @return void
-     */
-    public function add_field($field_type, $key, Array $params = array())
+    public function __construct($file = NULL, array $data = NULL)
     {
-        if ( $field_type != View_Form_Field::EXCLUDE ) {
-            $field = View_Form_Field::factory($field_type, $key, $params);
-            $this->_fields[$key] = $field;
-        }
+        parent::__construct($file, $data);
+
+        $this->action_buttons = array(
+            self::BUTTON_SAVE   => TRUE,
+            self::BUTTON_CANCEL => false,
+            self::BUTTON_DELETE => false
+        );
     }
 
-    /**
-     * Получение/Добавление ошибок к форме
-     *
-     * @param array $errors
-     *
-     * @return array
-     */
+    public function add_field($field_type, $key, Array $params = array())
+    {
+        if ( $field_type == View_Form_Field::EXCLUDE )
+            return;
+
+        $field = new View_Form_Field($field_type);
+        $field->set($params);
+        $field->set_key($key);
+        $this->fields[$key] = $field;
+    }
+
     public function errors(Array $errors = array())
     {
         if ($errors)
         {
-            $this->_errors = $errors;
+            $this->errors = $errors;
         }
 
-        return $this->_errors;
+        return $this->errors;
     }
 
-    /**
-     * Рендеринг готового шаблона для вывода
-     *
-     * @return View
-     */
-    public function render()
+    public function render($file = NULL)
     {
-        $view = View::factory($this->view_name);
-        $view->title = $this->title;
-        $view->action_buttons = $this->action_buttons;
-
-        $fields = '';
-
-        foreach ($this->get_fields() as $_field) {
-            $fields .= $_field->render();
+        foreach($this->get_fields() as $field)
+        {
+            $field->set('key', $this->get_input_name_for($field->get_key()));
         }
 
-        foreach ($this->params as $_key => $_value) {
-            $view->{$_key} = $_value;
-        }
+        $this->set('form', $this);
+        $this->set('fields', $this->fields);
 
-        $view->fields = $fields;
-
-        return $view;
+        return parent::render($file);
     }
 
-    /**
-     * getter $_fields
-     *
-     * @return array
-     */
     public function get_fields()
     {
-        return $this->_fields;
+        return $this->fields;
     }
 
-    // todo: реализовать
-    public function set_position()
-    {
+    public function get_input_name_for($key) {
+        $key = strval($key);
+        $keys = explode('[', $key);
 
+        if($this->input_name) {
+            $keys[0] .= ']';
+            array_unshift($keys, $this->input_name);
+        }
+
+        return implode('[', $keys);
     }
 }
 

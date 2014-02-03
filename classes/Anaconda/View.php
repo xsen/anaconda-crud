@@ -1,106 +1,14 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Абстрактный класс отображения данных
+ * Класс отображения данных
  *
  *
  * @package    Anaconda
  * @category   CRUD
  * @author     Evgeny Leshchenko
  */
-abstract class Anaconda_View {
-
-    /**
-     * @var string  заголовок
-     */
-    protected $title;
-
-    /**
-     * @var string  имя шаблона
-     */
-    protected $view_name;
-
-    /**
-     * @var array Массив для настроки показа кнопок
-     */
-    protected $action_buttons;
-
-    /**
-     * @var array Массив для передачи дополнительных значений в View
-     */
-    protected $params = array();
-
-    /**
-     * setter title
-     *
-     * @param string $title
-     */
-    public function set_title($title)
-    {
-        $this->title = $title;
-    }
-    /**
-     *
-     * @param string $param
-     * @param mixed $value
-     */
-    public function set_param($param, $value)
-    {
-        $this->params[$param] = $value;
-    }
-
-    // TODO: описать
-    abstract public function set_position();
-
-
-    /**
-     * Рендеринг готового шаблона для вывода
-     *
-     * @return View
-     */
-    public function render()
-    {
-        $view = View::factory($this->view_name);
-        $view->title = $this->title;
-
-        foreach ($this->params as $_key => $_value) {
-            $view->{$_key} = $_value;
-        }
-
-        return $view;
-    }
-
-    /**
-     * Установка layout'a
-     *
-     * @param string $view_name
-     */
-    public function set_view($view_name)
-    {
-        $this->view_name = $view_name;
-    }
-
-    /**
-     * Настройка показа конкретной кнопки
-     *
-     * @param string  $type_button
-     * @param boolean $is_view
-     */
-    public function set_button_view($type_button, $is_view)
-    {
-        $this->action_buttons[$type_button] = $is_view;
-    }
-
-    /**
-     * Настройка показа всех кнопок
-     *
-     * @param array $actions
-     */
-    public function set_buttons_view(Array $actions)
-    {
-        $this->action_buttons = $actions;;
-    }
-
+class Anaconda_View extends View {
 }
 
 ?>

@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-class Anaconda_View_Form_Field {
+class Anaconda_View_Form_Field extends View {
 
     const DATE = 'date';
     const DATETIME = 'datetime';
@@ -17,60 +17,49 @@ class Anaconda_View_Form_Field {
     const DISABLED = 'disabled';
     const EXCLUDE = null;
 
-    protected $key;
-    protected $type;
-    protected $params;
-    protected $view;
-    protected $path_templates = 'form/fields';
+    protected $_key;
+    protected $_type;
 
-    public static function factory($field_type, $key, Array $params = array())
-    {
-        return new View_Form_Field($field_type, $key, $params);
-    }
+    protected $_path_templates = 'form/fields';
 
-    public function __construct($field_type, $key, Array $params = array())
+    public static function factory($file = NULL, array $data = NULL)
     {
-        // TODO: check all params
-        $this->type = $field_type;
-        $this->key = $key;
-        $this->params = $params;
+        return new static($file, $data);
     }
 
     public function get_type()
     {
-        return $this->type;
+        $info = pathinfo($this->_file);
+        return $info['filename'];
+    }
+
+    public function set_type($type)
+    {
+        $this->set_filename($type);
     }
 
     public function get_key()
     {
-        return $this->key;
+        return $this->_key;
     }
 
     public function set_key($key)
     {
-        return $this->key = $key;
+        $this->_key = $key;
+        $this->set('key', $this->_key);
     }
 
-    public function render()
+    public function set_filename($file)
     {
-        $_template = $this->view ? $this->view : $this->path_templates.DIRECTORY_SEPARATOR.$this->type;
+        $field_file = trim($this->_path_templates, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
 
-        $view =  View::factory($_template);
-        $view->key = $this->get_key();
-
-        foreach ($this->params as $_key => $_value) {
-            $view->{$_key} = $_value;
+        if (($path = Kohana::find_file('views', $field_file)) === FALSE)
+        {
+            return parent::set_filename($file);
         }
 
-        return $view;
-    }
-
-    /**
-     * @param $view
-     */
-    public function set_view($view)
-    {
-        $this->view = $view;
+        $this->_file = $path;
+        return $this;
     }
 }
 

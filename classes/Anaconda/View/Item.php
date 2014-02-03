@@ -9,47 +9,25 @@
  * @author     Evgeny Leshchenko
  */
 class Anaconda_View_Item extends Anaconda_View {
-
-    /**
-     * @var string  имя шаблона
-     */
-    protected $view_name = 'item/item';
-
     // Константы кнопок класса
     const BUTTON_EDIT   = 2;
     const BUTTON_DELETE = 3;
 
-    /**
-     * @var array Массив для настроки показа кнопок
-     */
-    protected $action_buttons = array(
-        self::BUTTON_EDIT => FALSE,
-        self::BUTTON_DELETE => FALSE
-    );
-
-    public function __construct($model)
+    public function __construct($file = NULL, array $data = NULL)
     {
-        $this->model = $model;
+        parent::__construct($file, $data);
+
+        $this->action_buttons = array(
+            self::BUTTON_EDIT => FALSE,
+            self::BUTTON_DELETE => FALSE
+        );
     }
 
-    /**
-     * Рендеринг готового шаблона для вывода
-     *
-     * @return View
-     */
-    public function render()
+    public function render($file = NULL)
     {
-        $view = parent::render();
-        $view->model = $this->model;
-        $view->fields = $this->model->get_fields_view();
-        $view->action_buttons = $this->action_buttons;
+        $this->fields = $this->model->get_fields_view();
 
-        return $view->render();
-    }
-
-    // todo: реализовать метод
-    public function set_position()
-    {
+        return parent::render($file);
     }
 }
 

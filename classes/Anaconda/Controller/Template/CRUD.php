@@ -18,18 +18,20 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
     }
 
     protected $list_links = array('name');
-    protected $list_actions = array(View_List::BUTTON_ADD => true, View_List::BUTTON_EDIT => true, View_List::BUTTON_DELETE => true);
+    protected $list_actions = array(Anaconda_View_List::BUTTON_ADD => true, Anaconda_View_List::BUTTON_EDIT => true, Anaconda_View_List::BUTTON_DELETE => true);
 
     public function action_list()
     {
-        $list = $this->get_list();
+        $view = new View_List('list/list');
 
-        $view = new View_List($this->model_name, $list);
-        $view->set_title($this::get_name());
-        $view->set_buttons_view($this->list_actions);
+        $view->model_name = $this->model_name;
+        $view->list = $this->get_list();
+        $view->title = $this::get_name();
+        $view->action_buttons = $this->list_actions;
         $view->set_column_link($this->list_links);
 
-        $view = $this->_before_list_render($view, $list);
+        $this->_before_list_render($view);
+
         echo $view->render();
     }
 
@@ -42,67 +44,85 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
 
         $this->add_crumb($model->get_name(), $model->get_url('view'));
 
-        $action_buttons = array(
-            View_Item::BUTTON_EDIT   => TRUE,
-            View_Item::BUTTON_DELETE => TRUE,
-        );
+        $view = $this->get_model_view($model);
+        $this->_before_item_render($view);
 
-        $view = new View_Item($model);
-        $view->set_title($this::get_name());
-        $view->set_buttons_view($action_buttons);
-
-        $view = $this->_before_item_render($view, $model);
         echo $view->render();
     }
 
-    protected $edit_field_types = array();
-
-    public function action_add($edit = null)
+    public function action_add()
     {
-        /**
-         * @var ORM $model
-         */
-        $model = $edit ? $edit : ORM::factory($this->model_name);
-        if ( !$model->loaded() AND !$model->can_create() ) throw new HTTP_Exception_403;
+        $model = ORM::factory($this->model_name);
 
-        $errors = array();
-        if ( $this->request->method() == Request::POST ) {
-            $model->values($this->request->post());
-            $model = $this->_before_model_save($model);
+        if ( !$model->can_create() ) throw new HTTP_Exception_403;
 
-            try {
-                $model->save();
-                $model = $this->_after_model_save($model);
-            }catch (ORM_Validation_Exception $e) { $errors = $e->errors(); }
-
-            if (!$errors) $this->redirect($this->category_url);
-        }
-
-        $this->add_crumb($model->loaded() ? 'Редактирование' : 'Создание', '#');
-
-        $action_buttons = array(
-            View_Form::BUTTON_DELETE => $model->loaded() ? $model->get_url('delete') : null,
-            View_Form::BUTTON_CANCEL => $model->loaded() ? $model->get_url('view') : $this->category_url,
-            View_Form::BUTTON_SAVE   => TRUE,
-        );
-
-        $view = $model->generate_fields_for_form(new View_Form, $this->edit_field_types);
-        $view->set_title($model->loaded() ? 'Редактирование' : 'Создание');
-        $view->set_buttons_view($action_buttons);
-        $view->errors($errors);
-
-        $view = $this->_before_form_render($view, $model);
-        echo $view->render();
+        $this->add_crumb('Создание', '#');
+        $this->_model_form($model);
     }
 
     public function action_edit()
     {
         $model = ORM::factory($this->model_name, (int) $this->request->param('id'));
+
         if ( ! $model->loaded() ) throw new HTTP_Exception_404;
         if ( ! $model->can_edit() ) throw new HTTP_Exception_403;
 
         $this->add_crumb($model->get_name(), $model->get_url());
-        $this->action_add($model);
+        $this->_model_form($model);
+    }
+
+    protected $edit_field_types = array();
+
+    protected function _model_form($model)
+    {
+        $errors = array();
+        if ( $this->request->method() == Request::POST ) {
+            $model->values($this->request->post());
+            $this->_before_model_save($model);
+
+            try {
+                $model->save();
+                $this->_after_model_save($model);
+            }catch (ORM_Validation_Exception $e) { $errors = $e->errors(); }
+
+            if (!$errors) $this->redirect($this->category_url);
+        }
+
+        $form = $this->get_model_form($model);
+        $form->errors($errors);
+
+        $this->_before_form_render($form);
+
+        echo $form->render();
+    }
+
+    public function get_model_view($model)
+    {
+        $view = new View_Item('item/item');
+
+        $view->model = $model;
+        $view->title = $this::get_name();
+        $view->action_buttons = array(
+            View_Item::BUTTON_EDIT   => TRUE,
+            View_Item::BUTTON_DELETE => TRUE,
+        );
+
+        return $view;
+    }
+
+    public function get_model_form($model)
+    {
+        $form = new View_Form('form/form');
+        $model->generate_fields_for_form($form, $this->edit_field_types);
+        $form->model = $model;
+        $form->title = $model->loaded() ? 'Редактирование' : 'Создание';
+        $form->action_buttons = array(
+            View_Form::BUTTON_DELETE => $model->loaded() ? $model->get_url('delete') : null,
+            View_Form::BUTTON_CANCEL => $model->loaded() ? $model->get_url('view') : $this->category_url,
+            View_Form::BUTTON_SAVE   => TRUE,
+        );
+
+        return $form;
     }
 
     public function action_delete()
@@ -117,66 +137,30 @@ abstract class Anaconda_Controller_Template_CRUD extends Controller_Template {
         $this->redirect($this->category_url);
     }
 
-
     protected function get_list()
     {
         return ORM::factory($this->model_name)->find_all()->as_array();
     }
 
-
-    /**
-     * @param View_Form $view
-     * @param ORM $model
-
-     * @return  View_Form
-     */
-    protected function _before_form_render($view, $model)
+    protected function _before_form_render($view)
     {
-        return $view;
     }
 
-    /**
-     * @param View_Form $view
-     * @param ORM $model
-
-     * @return  View_Form
-     */
-    protected function _before_item_render($view, $model)
+    protected function _before_item_render($view)
     {
-        return $view;
     }
 
-    /**
-     * @param View_Form $view
-     * @param ORM $model
-
-     * @return  View_Form
-     */
-    protected function _before_list_render($view, $model)
+    protected function _before_list_render($view)
     {
-        return $view;
     }
 
-    /**
-     * @param ORM $model
-
-     * @return ORM
-     */
     protected function _before_model_save($model)
     {
-        return $model;
     }
 
-    /**
-     * @param ORM $model
-
-     * @return ORM
-     */
     protected function _after_model_save($model)
     {
-        return $model;
     }
-
 }
 
 ?>

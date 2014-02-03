@@ -9,91 +9,38 @@
  * @author     Evgeny Leshchenko
  */
 class Anaconda_View_List extends Anaconda_View {
-
-    /**
-     * @var array массив объектов для вывода
-     */
-    protected $list;
-
-    /**
-     * @var array список колонок для выводав таблицу
-     */
-    protected $columns;
-
-    /**
-     * @var array список ссылок для переходав просмотр объекта
-     */
-    protected $column_links = array();
-
-    /**
-     * @var string  имя шаблона
-     */
-    protected $view_name = 'list/list';
-
     // Константы кнопок класса
     const BUTTON_ADD    = 1;
     const BUTTON_EDIT   = 2;
     const BUTTON_DELETE = 3;
 
-    /**
-     * @var array Массив для настроки показа кнопок
-     */
-    protected $action_buttons = array(
-        self::BUTTON_ADD => FALSE,
-        self::BUTTON_EDIT => FALSE,
-        self::BUTTON_DELETE => FALSE
-    );
+    protected $_model;
 
-    public function __construct($model_name, Array $list)
+    public function __construct($file = NULL, array $data = NULL)
     {
-        $this->list = $list;
-        $this->model = Model::factory($model_name);
+        parent::__construct($file, $data);
+
+        $this->list = array();
+        $this->columns = array();
+        $this->column_links = array();
+        $this->action_buttons = array(
+            self::BUTTON_ADD => FALSE,
+            self::BUTTON_EDIT => FALSE,
+            self::BUTTON_DELETE => FALSE
+        );
     }
 
-    /**
-     * setter
-     *
-     * @param array $column_key
-     */
     public function set_column_link($column_key)
     {
         $this->column_links = $column_key;
     }
 
-    /**
-     * setter
-     *
-     * @param array $columns
-     */
     public function set_columns(Array $columns)
     {
         $this->columns = $columns;
     }
 
-    /**
-     * Рендеринг готового шаблона для вывода
-     *
-     * @return View
-     */
-    public function render()
-    {
-        $view = parent::render();
-
-        $view->list = $this->list;
-        $view->model = $this->model;
-        $view->columns = $this->get_columns();
-        $view->column_links = $this->column_links;
-        $view->action_buttons = $this->action_buttons;
-
-        return $view->render();
-    }
-
-    /**
-     * getter
-     *
-     * @return array
-     */
-    protected function get_columns()
+    public function get_columns()
     {
         if ( !$this->columns ) {
             $this->set_columns($this->model->get_fields_list());
@@ -102,10 +49,31 @@ class Anaconda_View_List extends Anaconda_View {
         return $this->columns;
     }
 
-    // todo: реализовать
-    public function set_position()
+    public function render($file = NULL)
     {
+        $this->set('model', $this->model);
+        $this->set('columns', $this->get_columns());
+        return parent::render($file);
+    }
 
+    public function & __get($key)
+    {
+        if($key === 'model')
+        {
+            if(empty($this->_model))
+            {
+                if(empty($this->model_name))
+                {
+                    throw new Kohana_Exception(__CLASS__ . '::$model_name is not set');
+                }
+
+                $this->_model = ORM::factory($this->model_name);
+            }
+
+            return $this->_model;
+        }
+
+        return parent::__get($key);
     }
 }
 
